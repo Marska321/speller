@@ -17,12 +17,16 @@ const translations = {
     grade3: "Grade 3",
     grade4: "Grade 4",
     aboutTitle: "About",
-    aboutIntro: "Speller is a daily word puzzle game for young spellers.",
+    aboutIntro: "Speller is a daily word puzzle game for young spellers in South Africa.",
     aboutGrades:
       "There are 3 daily puzzles based on grade level. Grade 2 uses 4-letter words, Grade 3 uses 5-letter words, and Grade 4 uses 6-letter words.",
+    aboutAdaptation:
+      "This version was adapted and localized by Mario Botha for South African classrooms, with South African English and Afrikaans support.",
+    aboutOrigins:
+      "It is based on the original Spellie project, which was written in Canadian English by Christopher Porter, David Hirtle, James Dodds, and many other contributors.",
     aboutPlay: "How to play",
     aboutPlayBody: "You have six (6) tries to guess the daily word, using the feedback to narrow down the options.",
-    aboutCreators: "Creators",
+    aboutCreators: "Credits",
     archiveTitle: "Archive",
     collectionTitle: "Collection",
     settingsTitle: "Settings",
@@ -88,12 +92,16 @@ const translations = {
     grade3: "Graad 3",
     grade4: "Graad 4",
     aboutTitle: "Oor",
-    aboutIntro: "Speller is 'n daaglikse woordraaisel vir jong spellers.",
+    aboutIntro: "Speller is 'n daaglikse woordraaisel vir jong spellers in Suid-Afrika.",
     aboutGrades:
       "Daar is 3 daaglikse raaisels volgens graadvlak. Graad 2 gebruik 4-letter woorde, Graad 3 gebruik 5-letter woorde, en Graad 4 gebruik 6-letter woorde.",
+    aboutAdaptation:
+      "Hierdie weergawe is deur Mario Botha aangepas en gelokaliseer vir Suid-Afrikaanse klaskamers, met Suid-Afrikaanse Engels en Afrikaans.",
+    aboutOrigins:
+      "Dit is gebaseer op die oorspronklike Spellie-projek, wat in Kanadese Engels geskryf is deur Christopher Porter, David Hirtle, James Dodds en baie ander bydraers.",
     aboutPlay: "Hoe om te speel",
     aboutPlayBody: "Jy kry ses (6) kanse om die daaglikse woord te raai en gebruik die terugvoer om nader te kom.",
-    aboutCreators: "Skeppers",
+    aboutCreators: "Erkennings",
     archiveTitle: "Argief",
     collectionTitle: "Versameling",
     settingsTitle: "Instellings",
