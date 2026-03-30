@@ -1,10 +1,6 @@
 (function f() {
-  const h = window.location.hostname;
-  const s = "spellie";
-  const g = "game";
-  if (![`${s}${g}.com`, "localhost"].includes(h)) {
-    window.location.replace(`https://${s}${g}.com`);
-  }
+  // Keep the original polyfill entry point, but do not redirect away from
+  // alternate hosts like Vercel preview or production domains.
 })();
 
 if (typeof window.queueMicrotask !== "function") {
