@@ -26,12 +26,14 @@ function getDefaultKnowledge() {
 
 /** @type {import("../types").Settings} */
 const settings = {
-  difficulty: "easy",
+  language: "en",
+  grade: "grade2",
   case: "lowercase",
   keyboardLayout: "atoz",
   theme: "blue",
   sharingEmojis: "nature",
   spellChecker: "off",
+  hints: "on",
 };
 
 describe("hint", () => {
@@ -158,6 +160,17 @@ describe("hint", () => {
 
       const hint = getHint(target, knowledge, customSettings, 2);
       expect(hint).toHaveProperty("message", "How about a vowel like Ⓔ?");
+    });
+    it("localizes generic hints for Afrikaans", () => {
+      const target = "FEET";
+      const knowledge = getKnowledge([], ["T"], []);
+
+      /** @type {import("../types").Settings} */
+      const afrikaansSettings = { ...settings, language: "af" };
+
+      const hint = getHint(target, knowledge, afrikaansSettings, 2);
+      expect(hint).toHaveProperty("message", "Probeer 'n vokaal soos ⓔ?");
+      expect(hint).toHaveProperty("letter", "E");
     });
 
     it("multiples", () => {

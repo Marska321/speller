@@ -151,6 +151,37 @@ function combineKnowledge(k1, k2) {
 const finalGuessIndex = 6 - 1;
 
 /**
+ * @param {import("../types").Settings} settings
+ * @param {"notThese" | "vowel" | "multiple" | "cluster" | "ending" | "fallback"} key
+ * @param {string[]} values
+ * @returns {string}
+ */
+function hintMessage(settings, key, values = []) {
+  const language = settings.language || "en";
+  /** @type {{ [language: string]: { notThese: string; vowel: string; multiple: string; cluster: string; ending: string; fallback: string } }} */
+  const templates = {
+    en: {
+      notThese: `It's definitely *not* these: ${values[0] || ""}`,
+      vowel: `How about a vowel like ${values[0] || ""}?`,
+      multiple: `There could be more than one ${values[0] || ""}`,
+      cluster: `Did you know ${values[0] || ""} and ${values[1] || ""} often go together?`,
+      ending: `Quite a few words end with ${values[0] || ""}`,
+      fallback: `I just love the letter ${values[0] || ""}, don't you?`,
+    },
+    af: {
+      notThese: `Dis beslis *nie* hierdie nie: ${values[0] || ""}`,
+      vowel: `Probeer 'n vokaal soos ${values[0] || ""}?`,
+      multiple: `Daar kan meer as een ${values[0] || ""} wees`,
+      cluster: `Het jy geweet ${values[0] || ""} en ${values[1] || ""} kom dikwels saam voor?`,
+      ending: `Baie woorde eindig met ${values[0] || ""}`,
+      fallback: `Ek hou nogal van die letter ${values[0] || ""}, né?`,
+    },
+  };
+
+  return (templates[language] || templates.en)[key];
+}
+
+/**
  * Provide a hint based on letters found so far and unique features of target.
  *
  * Goal: educate where possible and nudge in the right direction.
@@ -203,7 +234,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
     if (hinted.length === 3) {
       const label = hinted.map(prettyLetter).sort().join(", ");
       return {
-        message: `It's definitely *not* these: ${label}`,
+        message: hintMessage(settings, "notThese", [label]),
         misses: hinted,
       };
     }
@@ -218,7 +249,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
     const firstVowel = targetLetters.find((letter) => VOWELS.has(letter));
     if (firstVowel) {
       return {
-        message: `How about a vowel like ${prettyLetter(firstVowel)}?`,
+        message: hintMessage(settings, "vowel", [prettyLetter(firstVowel)]),
         letter: firstVowel,
       };
     }
@@ -229,7 +260,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
   const guessMultiple = findMultiple(lastGuess.split(""));
   if (targetMultiple && guessMultiple !== targetMultiple) {
     return {
-      message: `There could be more than one ${prettyLetter(targetMultiple)}`,
+      message: hintMessage(settings, "multiple", [prettyLetter(targetMultiple)]),
       letter: targetMultiple,
     };
   }
@@ -245,7 +276,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
       const firstNotFound = Array.from(clusterLetters).find((letter) => !combinedMatchPresent.has(letter));
       if (firstFound && firstNotFound) {
         return {
-          message: `Did you know ${prettyLetter(firstFound)} and ${prettyLetter(firstNotFound)} often go together?`,
+          message: hintMessage(settings, "cluster", [prettyLetter(firstFound), prettyLetter(firstNotFound)]),
           letter: firstNotFound,
         };
       }
@@ -255,7 +286,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
   // e at the end is common
   if (target.endsWith("E") && knowledge.availables.includes("E")) {
     return {
-      message: `Quite a few words end with ${prettyLetter("E")}`,
+      message: hintMessage(settings, "ending", [prettyLetter("E")]),
       letter: "E",
     };
   }
@@ -264,7 +295,7 @@ function getHint(target, knowledge, settings, guessIndex, lastGuess = "") {
   for (const letter of targetLetters) {
     if (!knowledge.matches.includes(letter) && !knowledge.presents.includes(letter)) {
       return {
-        message: `I just love the letter ${prettyLetter(letter)}, don't you?`,
+        message: hintMessage(settings, "fallback", [prettyLetter(letter)]),
         letter,
       };
     }

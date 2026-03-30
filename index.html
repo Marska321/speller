@@ -715,9 +715,9 @@
         get difficulty() {
           return GRADE_TO_DIFFICULTY[this.grade];
         },
-        get supportsHints() {
-          return this.language === "en";
-        },
+          get supportsHints() {
+            return true;
+          },
         get supportsEmojiCollection() {
           return Object.keys(getEmojiMap(this.language)).length > 0;
         },
@@ -1041,14 +1041,14 @@
             this.guesses[0][freebieIndex].state = "match"; // set this already as signal to player
           }
         },
-        get hintsAvailable() {
-          return this.supportsHints && this.settings.hints === "on" && this.grade !== "grade4";
-        },
-        prepareHint() {
-          if (!this.supportsHints || this.grade === "grade4" || this.currentGuessIndex < 2 || this.solved || this.failed) {
-            this.resetHint();
-            return;
-          }
+          get hintsAvailable() {
+            return this.supportsHints && this.settings.hints === "on";
+          },
+          prepareHint() {
+            if (!this.supportsHints || this.currentGuessIndex < 2 || this.solved || this.failed) {
+              this.resetHint();
+              return;
+            }
 
           try {
             const hint = getHint(
@@ -1269,12 +1269,9 @@
           if (this.settings.sharingEmojis === "") {
             this.settings.sharingEmojis = DEFAULT_SETTINGS.sharingEmojis;
           }
-          if (this.settings.language === "af") {
-            this.settings.hints = "off";
-          }
-          this.language = this.settings.language;
-          this.grade = this.settings.grade;
-          this.puzzleId = route.puzzleId;
+            this.language = this.settings.language;
+            this.grade = this.settings.grade;
+            this.puzzleId = route.puzzleId;
           this.page = route.page;
         },
         saveSettings() {
@@ -1283,15 +1280,12 @@
           this.loadCollection();
           this.loadArchive();
         },
-        updateSettings() {
-          this.language = this.settings.language;
-          this.grade = this.settings.grade;
-          if (this.language === "af") {
-            this.settings.hints = "off";
-          }
-          this.saveSettings();
-          this.updateRoute();
-          this.showNotice(this.t("settingsUpdated"));
+          updateSettings() {
+            this.language = this.settings.language;
+            this.grade = this.settings.grade;
+            this.saveSettings();
+            this.updateRoute();
+            this.showNotice(this.t("settingsUpdated"));
         },
         isArchiveGame() {
           return this.puzzleId !== todaysPuzzleId;
@@ -1309,15 +1303,12 @@
           }
           return /^#game-(en|af)-(grade2|grade3|grade4)(?:-\d+)?$/.test(this.page) || /^#(easy|medium|hard)(?:-\d+)?$/.test(this.page);
         },
-        updateLanguage(language) {
-          this.language = language;
-          this.settings.language = language;
-          if (language === "af") {
-            this.settings.hints = "off";
-          }
-          this.saveSettings();
-          this.updateRoute();
-        },
+          updateLanguage(language) {
+            this.language = language;
+            this.settings.language = language;
+            this.saveSettings();
+            this.updateRoute();
+          },
         updateGrade(grade, puzzleId) {
           this.grade = grade;
           this.settings.grade = grade;
