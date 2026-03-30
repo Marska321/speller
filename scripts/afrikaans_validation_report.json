@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "strictMode": false,
+  "summary": {
+    "errors": 0,
+    "warnings": 8,
+    "totalDictionaryWords": 332,
+    "totalPuzzleWords": 172
+  },
+  "warnings": [
+    {
+      "type": "pool-size",
+      "grade": "grade2",
+      "difficulty": "medium",
+      "count": 18,
+      "message": "Warning: grade2 (medium) only has 18 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade2",
+      "difficulty": "hard",
+      "count": 16,
+      "message": "Warning: grade2 (hard) only has 16 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade3",
+      "difficulty": "easy",
+      "count": 20,
+      "message": "Warning: grade3 (easy) only has 20 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade3",
+      "difficulty": "medium",
+      "count": 18,
+      "message": "Warning: grade3 (medium) only has 18 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade3",
+      "difficulty": "hard",
+      "count": 16,
+      "message": "Warning: grade3 (hard) only has 16 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade4",
+      "difficulty": "easy",
+      "count": 20,
+      "message": "Warning: grade4 (easy) only has 20 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade4",
+      "difficulty": "medium",
+      "count": 18,
+      "message": "Warning: grade4 (medium) only has 18 words. Consider expanding this pool for archive longevity."
+    },
+    {
+      "type": "pool-size",
+      "grade": "grade4",
+      "difficulty": "hard",
+      "count": 16,
+      "message": "Warning: grade4 (hard) only has 16 words. Consider expanding this pool for archive longevity."
+    }
+  ],
+  "errors": []
+}

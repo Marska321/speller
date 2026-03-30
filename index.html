@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Speller | Wordle for Kids</title>
+    <meta name="description" content="A kid-friendly version of the popular Wordle game" />
+
+    <meta property="og:url" content="https://spelliegame.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Speller - A daily word game for young spellers" />
+    <meta property="og:description" content="Wordle for kids. 3 daily puzzles for children of all ages." />
+    <meta property="og:image" content="https://spelliegame.com/preview.png" />
+    <meta name="twitter:image" content="https://spelliegame.com/preview.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="site.webmanifest" />
+
+    <script src="public/polyfill.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.10.5/dist/cdn.min.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link href="./public/main.css" rel="stylesheet" />
+    <script src="public/amplitude.js"></script>
+  </head>
+
+  <body
+    x-data="gameState()"
+    x-init="initialLoad()"
+    :class="`theme-${settings.theme} page-${page.replace('#', '')}`"
+    @keyup.document="keyPressed"
+    @hashchange.window="updatePage(location.hash)"
+    @scroll.window="handleArchiveScroll()"
+  >
+    <header>
+      <nav>
+        <div>
+          <a href="#about" class="nav-link" :title="t('navAbout')">
+            <i class="material-icons">info</i>
+          </a>
+          <a href="#archive" class="nav-link" :title="t('navArchive')" @click="loadArchive">
+            <i class="material-icons">calendar_month</i>
+          </a>
+        </div>
+        <div class="title">
+          <a x-bind:href="gameUrl"
+            >Speller<span x-cloak x-show="isArchiveGame" x-text="archiveDate" class="archive-title"></span
+          ></a>
+          <span x-cloak x-show="isAprilFools" title="April Fools!">🙃</span>
+        </div>
+        <div>
+          <a href="#collection" class="nav-link" :title="t('navCollection')" x-show="supportsEmojiCollection">
+            <span
+              class="nav-notification"
+              x-cloak
+              x-show="sessionNewEmojis.length > 0"
+              x-text="sessionNewEmojis.length"
+            ></span>
+            <i class="material-icons">collections</i>
+          </a>
+          <a href="#settings" class="nav-link" :title="t('navSettings')">
+            <i class="material-icons">settings</i>
+          </a>
+        </div>
+      </nav>
+      <div class="nav-language" x-cloak x-show="isGamePage()">
+        <button :class="{ active: language === 'en' }" @click="updateLanguage('en')" x-text="t('languageEnglish')"></button>
+        <button :class="{ active: language === 'af' }" @click="updateLanguage('af')" x-text="t('languageAfrikaans')"></button>
+      </div>
+      <div class="nav-tabs" x-cloak x-show="isGamePage()">
+        <button :class="{ active: grade === 'grade2' }" @click="updateGrade('grade2')" x-text="t('grade2')"></button>
+        <button :class="{ active: grade === 'grade3' }" @click="updateGrade('grade3')" x-text="t('grade3')"></button>
+        <button :class="{ active: grade === 'grade4' }" @click="updateGrade('grade4')" x-text="t('grade4')"></button>
+      </div>
+    </header>
+    <main :class="`target-${target.length}`">
+      <div class="about-content" x-show="page === '#about'" x-cloak>
+        <div class="subhead">
+          <h1 x-text="t('aboutTitle')"></h1>
+          <div>
+            <a x-bind:href="gameUrl">
+              <i class="material-icons">close</i>
+            </a>
+          </div>
+        </div>
+        <p x-text="t('aboutIntro')"></p>
+        <p x-text="t('aboutGrades')"></p>
+
+        <h2 x-text="t('aboutPlay')"></h2>
+        <p x-text="t('aboutPlayBody')"></p>
+        <div class="example-word">
+          <div class="guesses-word" :class="settings.case">
+            <div class="guesses-tile match">
+              <span>W</span>
+            </div>
+            <div class="guesses-tile miss">
+              <span>O</span>
+            </div>
+            <div class="guesses-tile present">
+              <span>R</span>
+            </div>
+            <div class="guesses-tile miss">
+              <span>D</span>
+            </div>
+          </div>
+        </div>
+        <ul>
+          <li>
+            The letter
+            <span :class="settings.case" class="heavy-letter">W</span>
+            is in the word and in the right spot.
+          </li>
+          <li>
+            The letter
+            <span :class="settings.case" class="heavy-letter">R</span>
+            is in the word but in the wrong spot.
+          </li>
+          <li>
+            The letters
+            <span :class="settings.case" class="heavy-letter">O</span> and
+            <span :class="settings.case" class="heavy-letter">D</span>
+            are not in the word in any spot.
+          </li>
+        </ul>
+
+        <h2 x-text="t('aboutCreators')"></h2>
+        <ul>
+          <li>Christopher Porter</li>
+          <li>David Hirtle</li>
+          <li>James Dodds</li>
+          <li>
+            Many other
+            <a href="https://github.com/canadianveggie/spellie" target="_blank">contributors</a>
+          </li>
+        </ul>
+        <div class="social-links">
+          <a href="https://bsky.app/profile/spelliegame.com" target="_blank"
+            ><img src="public/bluesky.png" alt="Bluesky" title="Follow on Bluesky"
+          /></a>
+          <a href="https://mastodon.social/@spellie" target="_blank"
+            ><img src="public/mastodon.png" alt="Mastodon" title="Follow on Mastodon"
+          /></a>
+          <a href="https://github.com/canadianveggie/spellie" target="_blank"
+            ><img src="public/github.png" alt="GitHub" title="Follow on GitHub"
+          /></a>
+          <img src="public/madeInCanada.png" alt="Proudly Made in Canada" title="Proudly Made in Canada" />
+        </div>
+        <p class="legal">
+          © 2022 Christopher Porter and David Hirtle. Licensed under the PolyForm Noncommercial License 1.0.0. “Spellie”
+          and associated logos are trademarks of the authors.
+        </p>
+      </div>
+      <div class="game-content" x-show="isGamePage()">
+        <div class="guesses-grid">
+          <template x-for="(guess, guessIndex) in guesses" :key="`${gameId}-${guessIndex}`">
+            <div class="guesses-row" :class="settings.case">
+              <template x-for="(letter, letterIndex) in guess">
+                <div
+                  class="guesses-tile"
+                  :class="[letter.state, isCursor(guessIndex, letterIndex) ? 'cursor' : '']"
+                  @click="selectTile(guessIndex, letterIndex)"
+                >
+                  <span x-show="letter.letter" x-text="masked ? '' : letter.letter" x-transition:enter="pop"></span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+        <div class="hint-area" x-show="hintsAvailable">
+          <button
+            class="hint-button"
+            @click="showHint"
+            x-show="hint.available"
+            x-transition:enter.duration.500ms
+            x-cloak
+            x-text="t('hintButton')"
+          >
+          </button>
+        </div>
+        <div x-show="solved && endGame" x-cloak>
+          <div x-transition.enter.duration.1000ms x-transition.leave.duration.0ms class="victory">
+            <div class="victory-badge">
+              <span class="emoji" x-text="victoryEmoji"></span>
+              <span class="victory-text" x-text="t('win')"></span>
+            </div>
+          </div>
+        </div>
+        <div x-cloak x-show="failed && endGame" x-transition:enter.duration.1000ms class="defeat">
+          <div class="defeat-badge">
+            <span class="defeat-emoji">☁️</span>
+            <div class="defeat-copy">
+              <span class="defeat-title" x-show="masked" x-text="t('niceTry')"></span>
+              <span class="defeat-title" x-cloak x-show="!masked">
+                <span x-text="t('notFound')"></span>
+                <strong x-text="target"></strong>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div x-cloak x-show="endGame" class="masked-game-buttons">
+          <button @click="masked ? unmask : mask">
+            <span x-text="masked ? t('reveal') : t('hide')"></span>
+            <i class="material-icons" aria-hidden="true" x-text="masked ? 'visibility' : 'visibility_off'"></i>
+          </button>
+          <button @click="resetLevel">
+            <span x-text="t('reset')"></span>
+            <i class="material-icons" aria-hidden="true">replay</i>
+          </button>
+          <button @click="share" x-show="canShare">
+            <span x-text="t('share')"></span>
+            <i class="material-icons" aria-hidden="true">share</i>
+          </button>
+        </div>
+        <div class="keyboard">
+          <template x-if="!endGame">
+            <template x-for="(keyboardRow, rowIndex) in keyboard" :key="`${gameId}-${rowIndex}`">
+              <div class="keyboard-row">
+                <template x-for="letter in keyboardRow" :key="`${gameId}-${letter.label}`">
+                  <div
+                    class="key"
+                    :class="[settings.case, 'key-' + letter.type, letter.state, hint.shown && letter.label === hint.letter ? 'pulse' : '']"
+                    @click="addLetter(letter)"
+                    @keyup.enter.stop="addLetter(letter)"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <template x-if="letter.type === 'back'">
+                      <i class="material-icons">backspace</i>
+                    </template>
+                    <template x-if="letter.type !== 'back'">
+                      <span x-text="letter.label"></span>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </template>
+        </div>
+      </div>
+      <div class="collection-content" x-show="page === '#collection' && supportsEmojiCollection" x-cloak>
+        <div class="subhead">
+          <h1 x-text="t('collectionTitle')"></h1>
+          <div>
+            <a x-bind:href="gameUrl" class="close-link">
+              <i class="material-icons">close</i>
+            </a>
+          </div>
+        </div>
+
+        <p x-show="unlockedEmojis.length === 0">
+          <span x-text="t('collectionEmpty')"></span><br /><span x-text="t('collectionEmpty2')"></span>
+        </p>
+        <p x-show="unlockedEmojis.length === 1">
+          <span x-text="t('collectionFirst')"></span><br /><span x-text="t('collectionFirst2')"></span>
+        </p>
+        <p x-show="unlockedEmojis.length > 1 && lockedEmojis.length > 0">
+          <span x-text="t('collectionFoundPrefix')"></span>
+          <strong x-text="unlockedEmojis.length"></strong>
+          <span x-text="t('collectionFoundSuffix')"></span><br /><span x-text="t('collectionFoundMore')"></span>
+        </p>
+        <p x-show="lockedEmojis.length === 0" x-text="t('collectionComplete')"></p>
+        <div class="collection-tiles">
+          <div class="guesses-word" x-show="unlockedEmojis.length === 0" :class="settings.case">
+            <div class="guesses-tile emoji-tile">
+              <span>❓</span>
+            </div>
+            <template x-for="letter in '????'">
+              <div class="guesses-tile match">
+                <span x-text="letter"></span>
+              </div>
+            </template>
+          </div>
+          <template x-for="(collectable, i) in unlockedEmojis">
+            <div class="guesses-word" x-show="collectable.unlocked" :class="[settings.case]">
+              <div class="guesses-tile emoji-tile">
+                <img
+                  :src="getEmojiImage(collectable.emoji)"
+                  :onerror="`this.onerror=null;this.replaceWith('${collectable.emoji}')`"
+                  class="emoji-image"
+                  :class="collectable.new ? 'reward-pop-bounce' : ''"
+                  width="32"
+                  height="32"
+                  :alt="collectable.word"
+                />
+              </div>
+              <template x-for="letter in collectable.word">
+                <div class="guesses-tile" :class="collectable.new ? 'present' : 'match'">
+                  <span x-text="letter"></span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+        <p x-show="unlockedEmojis.length > 1 && lockedEmojis.length > 0">
+          <span x-text="t('collectionTotalPrefix')"></span>
+          <span x-text="Math.floor(Object.keys(emojis).length / 100)  * 100"></span>
+          <span x-text="t('collectionTotalSuffix')"></span>
+        </p>
+        <div class="hint-area" x-show="unlockedEmojis.length >= 100 && lockedEmojis.length > 0" x-cloak>
+          <button class="hint-button" @click="showEmojiHint" x-text="t('collectionHint')"></button>
+        </div>
+      </div>
+      <div class="archive-content" x-show="page === '#archive'" x-cloak>
+        <div class="subhead">
+          <h1 x-text="t('archiveTitle')"></h1>
+          <div>
+            <a x-bind:href="gameUrl" class="close-link">
+              <i class="material-icons">close</i>
+            </a>
+          </div>
+        </div>
+
+        <div class="archive-list">
+          <template x-for="(archivePuzzle) in visibleArchivePuzzles" :key="archivePuzzle.puzzleId">
+            <div class="archive-row">
+              <div class="archive-date">
+                <span x-text="formatArchiveDate(archivePuzzle.puzzleId)"></span>
+              </div>
+              <div class="archive-buttons">
+                <button :class="archivePuzzle.grade2" @click="updateGrade('grade2', archivePuzzle.puzzleId)" x-text="t('grade2')"></button>
+                <button :class="archivePuzzle.grade3" @click="updateGrade('grade3', archivePuzzle.puzzleId)" x-text="t('grade3')"></button>
+                <button :class="archivePuzzle.grade4" @click="updateGrade('grade4', archivePuzzle.puzzleId)" x-text="t('grade4')"></button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="settings-content" x-show="page === '#settings'" x-cloak>
+        <div class="subhead">
+          <h1 x-text="t('settingsTitle')"></h1>
+          <div>
+            <a x-bind:href="gameUrl" class="close-link">
+              <i class="material-icons">close</i>
+            </a>
+          </div>
+        </div>
+        <section>
+          <h2 x-text="t('labelLanguage')"></h2>
+          <div>
+            <input type="radio" id="language-en" value="en" x-model="settings.language" @change="updateSettings" />
+            <label for="language-en" x-text="t('languageEnglish')"></label>
+          </div>
+          <div>
+            <input type="radio" id="language-af" value="af" x-model="settings.language" @change="updateSettings" />
+            <label for="language-af" x-text="t('languageAfrikaans')"></label>
+          </div>
+        </section>
+        <section>
+          <h2 x-text="t('settingsKeyboard')"></h2>
+          <div>
+            <input
+              type="radio"
+              id="keyboardLayout-atoz"
+              value="atoz"
+              x-model="settings.keyboardLayout"
+              @change="updateSettings"
+            />
+            <label for="keyboardLayout-atoz" x-text="t('keyboardAZ')"></label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="keyboardLayout-qwerty"
+              value="qwerty"
+              x-model="settings.keyboardLayout"
+              @change="updateSettings"
+            />
+            <label for="keyboardLayout-qwerty" x-text="t('keyboardQwerty')"></label>
+          </div>
+        </section>
+        <section>
+          <h2 x-text="t('settingsLetters')"></h2>
+          <div>
+            <input
+              type="radio"
+              id="case-lowercase"
+              value="lowercase"
+              x-model="settings.case"
+              @change="updateSettings"
+            />
+            <label for="case-lowercase" x-text="t('lowercase')"></label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="case-uppercase"
+              value="uppercase"
+              x-model="settings.case"
+              @change="updateSettings"
+            />
+            <label for="case-uppercase" x-text="t('uppercase')"></label>
+          </div>
+        </section>
+        <section>
+          <h2 x-text="t('settingsSpellChecker')"></h2>
+          <div>
+            <input
+              type="radio"
+              id="spellChecker-off"
+              value="off"
+              x-model="settings.spellChecker"
+              @change="updateSettings"
+            />
+            <label for="spellChecker-off" x-text="t('optionOff')"></label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="spellChecker-on"
+              value="on"
+              x-model="settings.spellChecker"
+              @change="updateSettings"
+            />
+            <label for="spellChecker-on" x-text="t('optionOn')"></label>
+          </div>
+        </section>
+        <section x-show="supportsHints">
+          <h2 x-text="t('settingsHints')"></h2>
+          <div>
+            <input type="radio" id="hints-off" value="off" x-model="settings.hints" @change="updateSettings" />
+            <label for="hints-off" x-text="t('optionOff')"></label>
+          </div>
+          <div>
+            <input type="radio" id="hints-on" value="on" x-model="settings.hints" @change="updateSettings" />
+            <label for="hints-on" x-text="t('optionOn')"></label>
+          </div>
+        </section>
+        <section>
+          <h2 x-text="t('settingsTheme')"></h2>
+          <div>
+            <input type="radio" id="theme-blue" value="blue" x-model="settings.theme" @change="updateSettings" />
+            <label for="theme-blue" x-text="t('themeDefault')"></label>
+          </div>
+          <div>
+            <input type="radio" id="theme-high" value="high" x-model="settings.theme" @change="updateSettings" />
+            <label for="theme-high" x-text="t('themeHighContrast')"></label>
+          </div>
+        </section>
+        <section x-show="supportsEmojiCollection">
+          <h2 x-text="t('settingsSharingTheme')"></h2>
+          <template x-for="entries in Object.entries(emojiMatchThemes)">
+            <div class="sharing-theme-row">
+              <input
+                :id="'sharing-emojis-' + entries[0]"
+                type="radio"
+                :value="entries[0]"
+                x-model="settings.sharingEmojis"
+                @change="updateSettings"
+              />
+              <label
+                :for="'sharing-emojis-' + entries[0]"
+                dddx-text="entries[1].match + entries[1].present + entries[1].miss"
+              >
+                <img
+                  :src="getEmojiImage(entries[1].match)"
+                  class="emoji-image"
+                  width="20"
+                  height="20"
+                  :onerror="`this.onerror=null;this.replaceWith('${entries[1].match}')`"
+                  :alt="entries[1].match"
+                />
+                <img
+                  :src="getEmojiImage(entries[1].present)"
+                  class="emoji-image"
+                  width="20"
+                  height="20"
+                  :onerror="`this.onerror=null;this.replaceWith('${entries[1].present}')`"
+                  :alt="entries[1].present"
+                />
+                <img
+                  :src="getEmojiImage(entries[1].miss)"
+                  class="emoji-image"
+                  width="20"
+                  height="20"
+                  :onerror="`this.onerror=null;this.replaceWith('${entries[1].miss}')`"
+                  :alt="entries[1].miss"
+                />
+              </label>
+            </div>
+          </template>
+        </section>
+      </div>
+      <div
+        x-data="noticesHandler()"
+        class="notice"
+        @notice.window="notify($event.detail)"
+        x-cloak
+        x-show="notice && notice.visible"
+        @click="remove(notice && notice.id)"
+        @keyup.document.escape="remove(notice && notice.id)"
+        x-html="message"
+        x-transition:enter="fadein"
+      ></div>
+    </main>
+  </body>
+
+  <script src="public/puzzles.js"></script>
+  <script src="public/wordHints.js"></script>
+  <script src="public/hint.js"></script>
+  <script src="public/emojis.js"></script>
+  <script src="public/emojis_af.js"></script>
+  <script src="public/mobileCheck.js"></script>
+  <script src="public/dictionary.js"></script>
+  <script src="public/translations.js"></script>
+  <script src="public/words/en.js"></script>
+  <script src="public/words/af.js"></script>
+  <script src="public/dictionaries/en.js"></script>
+  <script src="public/dictionaries/af.js"></script>
+  <script>
+    /* global amplitude, combineKnowledge, compareTargetAndGuess, emojis, emojisAf, getDateForPuzzleId, getEmojiImage, getHint, getHolidayPuzzle, getTodayPuzzleId, guessesAsEmojis, keysToKnowledge, languageDictionaries, languageWords, onMobile, translations, validWords */
+
+    const identify = new amplitude.Identify().set("host", window.location.hostname);
+    amplitude.getInstance().identify(identify);
+
+    let todaysPuzzleId = getTodayPuzzleId();
+    const maxGuesses = 6;
+    initScalingFontSize();
+
+    // Add emoji keys to valid words
+    // So that ELSA and ROFL are accepted
+    const deprecatedEnglishEmojiWords = new Set(["CENTER", "COLOR", "FLAVOR", "THEATER", "AIRPLANE", "ORGANIZED"]);
+
+    Object.keys(emojis).forEach((key) => {
+      validWords.add(key);
+      if (languageDictionaries.en && !deprecatedEnglishEmojiWords.has(key)) {
+        languageDictionaries.en.add(key);
+      }
+    });
+    Object.keys(emojisAf || {}).forEach((key) => {
+      if (languageDictionaries.af) {
+        languageDictionaries.af.add(key);
+      }
+    });
+
+    function initialKeys() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+      const keyboard = letters.map((letter) => ({
+        type: "letter",
+        label: letter,
+        state: "available",
+      }));
+      keyboard.push({
+        type: "back",
+        label: "",
+        state: "unavailable",
+      });
+      keyboard.push({
+        type: "enter",
+        label: "guess",
+        state: "unavailable",
+      });
+      return keyboard;
+    }
+
+    function emptyGuesses(wordLength, guessLength) {
+      const guesses = [];
+      for (let i = 0; i < guessLength; i++) {
+        const guess = [];
+        for (let j = 0; j < wordLength; j++) {
+          guess.push({ letter: "", state: "pending" });
+        }
+        guesses.push(guess);
+      }
+      return guesses;
+    }
+
+    const ENGLISH_EMOJI_ALIASES = {
+      COLOUR: "COLOR",
+      COLOURS: "COLORS",
+      FLAVOUR: "FLAVOR",
+      CENTRE: "CENTER",
+      CHEQUE: "CHECK",
+      CHEQUES: "CHECKS",
+    };
+
+    function getEmojiWord(word) {
+      if (emojis[word]) {
+        return word;
+      }
+      return ENGLISH_EMOJI_ALIASES[word] || word;
+    }
+
+    function getEmojiMap(language) {
+      return language === "af" ? emojisAf || {} : emojis;
+    }
+
+    function getLanguageEmojiWord(language, word) {
+      const normalizedWord = (word || "").toUpperCase();
+      const activeEmojis = getEmojiMap(language);
+      if (activeEmojis[normalizedWord]) {
+        return normalizedWord;
+      }
+      if (language === "en") {
+        return ENGLISH_EMOJI_ALIASES[normalizedWord] || normalizedWord;
+      }
+      return normalizedWord;
+    }
+
+    const LANGUAGES = ["en", "af"];
+    const GRADES = ["grade2", "grade3", "grade4"];
+    const GRADE_TO_DIFFICULTY = {
+      grade2: "easy",
+      grade3: "medium",
+      grade4: "hard",
+    };
+    const DIFFICULTY_TO_GRADE = {
+      easy: "grade2",
+      medium: "grade3",
+      hard: "grade4",
+    };
+
+    function parseHash(hash, fallbackLanguage = "en", fallbackGrade = "grade2") {
+      const page = hash || "";
+      const language = LANGUAGES.includes(fallbackLanguage) ? fallbackLanguage : "en";
+      const grade = GRADES.includes(fallbackGrade) ? fallbackGrade : "grade2";
+
+      if (!page) {
+        return { page: "", language, grade, puzzleId: todaysPuzzleId };
+      }
+
+      const gameMatch = page.match(/^#game-(en|af)-(grade2|grade3|grade4)(?:-(\d+))?$/);
+      if (gameMatch) {
+        return {
+          page,
+          language: gameMatch[1],
+          grade: gameMatch[2],
+          puzzleId: gameMatch[3] ? parseInt(gameMatch[3], 10) : todaysPuzzleId,
+        };
+      }
+
+      const legacyMatch = page.match(/^#(easy|medium|hard)(?:-(\d+))?$/);
+      if (legacyMatch) {
+        return {
+          page,
+          language: "en",
+          grade: DIFFICULTY_TO_GRADE[legacyMatch[1]],
+          puzzleId: legacyMatch[2] ? parseInt(legacyMatch[2], 10) : todaysPuzzleId,
+        };
+      }
+
+      return { page, language, grade, puzzleId: todaysPuzzleId };
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    function gameState() {
+      const initialRoute = parseHash(window.location.hash);
+      const DEFAULT_SETTINGS = {
+        language: initialRoute.language,
+        grade: initialRoute.grade,
+        case: "lowercase", // lowercase, uppercase
+        hints: "on", // on, off
+        keyboardLayout: "qwerty", // atoz, qwerty
+        sharingEmojis: "nature", // fruit, vegetable, nature, tree
+        spellChecker: "on", // on, off
+        theme: "blue", // blue, high
+      };
+      const DEFAULT_STATISTICS = {};
+      GRADES.forEach((grade) => {
+        DEFAULT_STATISTICS[grade] = {
+          success: 0,
+          fail: 0,
+          guesses: [0, 0, 0, 0, 0, 0, 0],
+        };
+      });
+      const DEFAULT_HINT = {
+        available: false,
+        shown: false,
+        message: null,
+        timer: null,
+      };
+
+      const HINT_DELAY = 10 * 1000;
+
+      return {
+        settings: {}, // placeholder until x-init
+        page: initialRoute.page,
+        language: initialRoute.language,
+        grade: initialRoute.grade,
+        puzzleId: initialRoute.puzzleId,
+        target: "",
+        guesses: [],
+        solved: false,
+        failed: false,
+        masked: false,
+        endGame: false,
+        repeatedGame: false,
+        gameId: 0,
+        hint: DEFAULT_HINT,
+        currentGuessIndex: 0,
+        cursor: 0,
+        cursorMode: false,
+        keys: initialKeys(),
+        archivePuzzles: [],
+        visibleArchiveCount: 365,
+        emojiCollection: [],
+        newEmojis: [],
+        hintKnowledge: {
+          matches: [],
+          presents: [],
+          misses: [],
+          availables: [],
+        },
+        t(key) {
+          const languageTranslations = translations[this.language] || translations.en;
+          return languageTranslations[key] || translations.en[key] || key;
+        },
+        get difficulty() {
+          return GRADE_TO_DIFFICULTY[this.grade];
+        },
+        get supportsHints() {
+          return this.language === "en";
+        },
+        get supportsEmojiCollection() {
+          return Object.keys(getEmojiMap(this.language)).length > 0;
+        },
+        get isFallbackAfrikaans() {
+          return this.language === "af" && languageWords.af && languageWords.af.isFallback;
+        },
+        get currentWords() {
+          return languageWords[this.language] || languageWords.en;
+        },
+        get currentDictionary() {
+          return languageDictionaries[this.language] || languageDictionaries.en;
+        },
+        get gradeLabel() {
+          return this.t(this.grade);
+        },
+        get hintButtonLabel() {
+          return this.t("hintButton");
+        },
+        updateTitle() {
+          const titles = {
+            "#archive": `${this.t("appTitle")} | ${this.t("archiveTitle")}`,
+            "#collection": `${this.t("appTitle")} | ${this.t("collectionTitle")}`,
+            "#settings": `${this.t("appTitle")} | ${this.t("settingsTitle")}`,
+            "#about": `${this.t("appTitle")} | ${this.t("aboutTitle")}`,
+          };
+          document.documentElement.lang = this.language;
+          if (titles[this.page]) {
+            document.title = titles[this.page];
+          } else if (this.isGamePage()) {
+            document.title = `${this.t("appTitle")} | ${this.gradeLabel}${this.isArchiveGame() ? this.archiveDate : ""}`;
+          } else {
+            document.title = `${this.t("appTitle")} | ${this.t("appTagline")}`;
+          }
+        },
+        updatePage(page) {
+          const route = parseHash(page, this.language, this.grade);
+          this.page = route.page;
+          if (this.isGamePage()) {
+            this.language = route.language;
+            this.grade = route.grade;
+            this.puzzleId = route.puzzleId;
+            this.settings.language = route.language;
+            this.settings.grade = route.grade;
+            this.loadGameState();
+            this.loadArchive();
+          }
+          this.updateTitle();
+        },
+        addLetter(letterState) {
+          if (this.solved || this.failed) {
+            return;
+          }
+          if (letterState.type === "enter") {
+            if (!this.isCurrentWordComplete()) {
+              return;
+            }
+            if (this.isCurrentWordInvalid()) {
+              this.showNotice(this.t("invalidWord"));
+              return;
+            }
+            this.currentGuess.forEach((letterGuess) => (letterGuess.state = "submitted"));
+            this.resetHint();
+            this.checkAnswer();
+            if (!this.solved && !this.failed) {
+              this.cursor = this.cursorReverse ? this.target.length - 1 : 0;
+              this.prepareHint();
+            } else if (this.solved) {
+              // Move cursor off the page
+              this.cursor = this.target.length;
+            }
+            this.updateControls();
+            this.saveGameState();
+            this.cursorMode = false;
+          } else if (letterState.type === "back") {
+            const deleteIndex = this.cursorMode ? this.cursor : this.cursorAdjust(-1);
+            if (
+              deleteIndex >= 0 &&
+              deleteIndex < this.currentGuess.length &&
+              this.currentGuess[deleteIndex].state !== "match" // keep freebie
+            ) {
+              this.currentGuess[deleteIndex].letter = "";
+              if (this.cursorMode) {
+                this.cursorMode = false;
+              } else if (this.cursorReverse) {
+                this.cursor = Math.min(this.target.length - 1, this.cursor + 1);
+              } else {
+                this.cursor = Math.max(0, this.cursor - 1);
+              }
+              this.updateControls();
+            }
+          } else if (letterState.type === "letter") {
+            if (this.currentGuess && this.cursor >= 0 && this.cursor < this.currentGuess.length) {
+              this.currentGuess[this.cursor].letter = letterState.label.toUpperCase();
+              this.cursor = this.cursorAdjust(1);
+              this.cursorMode = false;
+              this.updateControls();
+            }
+          }
+        },
+        checkAnswer() {
+          if (this.currentGuessIndex === 0) {
+            amplitude.getInstance().logEvent("level_start", {
+              level_name: this.level,
+              difficulty: this.grade,
+              language: this.language,
+              archiveGame: this.isArchiveGame(),
+              repeatedGame: this.repeatedGame,
+            });
+          }
+          const result = compareTargetAndGuess(this.target, this.currentWord);
+          result.forEach((letterResult, i) => {
+            this.currentGuess[i].state = letterResult;
+          });
+          this.updateKeyboardForGuess(this.currentWord);
+          this.checkEmojiGuess();
+          this.solved = this.currentWord === this.target;
+          this.currentGuessIndex += 1;
+          if (this.solved) {
+            this.levelEnd();
+            return;
+          }
+          if (!this.solved && !this.failed && this.currentGuessIndex >= this.guesses.length) {
+            this.failed = true;
+            this.levelEnd();
+          }
+        },
+        checkEmojiGuess() {
+          if (!this.supportsEmojiCollection) {
+            return;
+          }
+          const activeEmojis = getEmojiMap(this.language);
+          const emojiWord = getLanguageEmojiWord(this.language, this.currentWord);
+          const emoji = activeEmojis[emojiWord];
+          const alreadyFound = this.unlockedEmojis.some((entry) => entry.word === this.currentWord);
+          if (emoji && !alreadyFound) {
+            if (this.lockedEmojis.length === 1) {
+              this.showNotice(`You unlocked the last emoji #${emoji}# !`, "reward");
+            } else {
+              this.showNotice(`You unlocked #${emoji}# !`, "reward");
+            }
+            this.newEmojis.push(emoji);
+            const collection = this.getFromLocalStorage(this.getCollectionKey(), {
+              unlocked: {},
+            });
+            collection.unlocked[this.currentWord] = {
+              date: new Date().toISOString(),
+            };
+            localStorage.setItem(this.getCollectionKey(), JSON.stringify(collection));
+            const collectable = this.emojiCollection.find((c) => c.word === this.currentWord);
+            collectable.unlocked = true;
+            collectable.new = true;
+          }
+        },
+        updateKeyboardForGuess(guess) {
+          const result = compareTargetAndGuess(this.target, guess);
+          result.forEach((letterResult, i) => {
+            const label = guess[i];
+            const key = this.keys.find((letter) => letter.label === label);
+            // Don't overwrite match or present with miss
+            if (!key || key.state === "match" || (key.state === "present" && letterResult === "miss")) {
+              return;
+            }
+            key.state = letterResult;
+          });
+        },
+        updateKeyboardForHints(hintKnowledge) {
+          hintKnowledge.misses.forEach((missLetter) => {
+            const key = this.keys.find((letter) => letter.label === missLetter);
+            key.state = "miss";
+          });
+          hintKnowledge.presents.forEach((presentLetter) => {
+            const key = this.keys.find((letter) => letter.label === presentLetter);
+            if (key.state === "available") {
+              key.state = "present";
+            }
+          });
+        },
+        updateKeyboard() {
+          this.keys.forEach((key) => {
+            if (key.type === "letter") {
+              key.state = "available";
+            }
+          });
+          this.guessWords.forEach((guessWord) => {
+            this.updateKeyboardForGuess(guessWord);
+          });
+          this.updateKeyboardForHints(this.hintKnowledge);
+          this.updateControls();
+        },
+        get keyboard() {
+          const aToZ = ["ABCDEFGHI", "JKLMNOPQR", "STUVWXYZ"];
+          const qwerty = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+
+          const layout = this.settings.keyboardLayout === "qwerty" ? qwerty : aToZ;
+          const keyboard = [];
+          layout.forEach((row) => {
+            const rowKeys = row.split("").map((letter) => {
+              return this.keys.find((key) => key.label === letter);
+            });
+            keyboard.push(rowKeys);
+          });
+          keyboard[2].push(this.keys.find((key) => key.type === "back"));
+          keyboard[3] = [this.keys.find((key) => key.type === "enter")];
+          return keyboard;
+        },
+        updateControls() {
+          const backKey = this.keys.find((letter) => letter.type === "back");
+          const enterKey = this.keys.find((letter) => letter.type === "enter");
+          backKey.state = this.cursor > 0 ? "available" : "unavailable";
+          if (this.cursorReverse) {
+            backKey.state = this.cursor < this.target.length - 1 ? "available" : "unavailable";
+          }
+          enterKey.state =
+            this.isCurrentWordComplete() && !this.isCurrentWordInvalid() ? "available pulse-small" : "unavailable";
+        },
+        keyPressed(e) {
+          if (this.page === "#collection" && e.key === "?") {
+            this.showEmojiHint();
+          }
+
+          if (!this.isGamePage()) return;
+          if (e.key === "Tab") return;
+
+          if (e.key === "Enter" || e.key === " ") {
+            e.target.blur();
+            this.addLetter({ type: "enter" });
+          } else if (e.key === "Backspace") {
+            e.target.blur();
+            this.addLetter({ type: "back" });
+          } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            const delta = e.key === "ArrowLeft" ? -1 : 1;
+            const nextCursorIndex = Math.min(this.target.length - 1, Math.max(0, this.cursor + delta));
+            if (this.currentGuess[nextCursorIndex].state === "match") {
+              return; // don't allow reaching a freebie letter
+            }
+            this.cursor = nextCursorIndex;
+            this.cursorMode = true;
+          } else if (/^[a-zA-Z]$/.test(e.key) && !e.altKey && !e.ctrlKey && !e.metaKey) {
+            e.target.blur(); // user is no longer navigating by tab
+            this.addLetter({ type: "letter", label: e.key });
+          }
+        },
+        selectTile(guessIndex, letterIndex) {
+          if (
+            !this.solved &&
+            guessIndex === this.currentGuessIndex &&
+            this.currentGuess[letterIndex].state !== "match"
+          ) {
+            this.cursor = letterIndex;
+            this.cursorMode = true;
+          }
+        },
+        get currentGuess() {
+          return this.guesses[this.currentGuessIndex];
+        },
+        guessToWord(guess) {
+          return guess && guess.map((letterGuess) => letterGuess.letter || " ").join("");
+        },
+        get lastWord() {
+          const guess = this.guesses[this.currentGuessIndex - 1];
+          return guess ? this.guessToWord(guess) : "";
+        },
+        get currentWord() {
+          return this.guessToWord(this.currentGuess);
+        },
+        get guessWords() {
+          return this.guesses.slice(0, this.currentGuessIndex).map((guess) => this.guessToWord(guess));
+        },
+        get guessWordDictionary() {
+          return this.guessWords.reduce((acc, guessWord, i) => {
+            acc[`guess${i + 1}`] = guessWord;
+            return acc;
+          }, {});
+        },
+        get guessEmojis() {
+          if (!this.supportsEmojiCollection) {
+            return [];
+          }
+          const activeEmojis = getEmojiMap(this.language);
+          return this.guessWords.map((guessWord) => activeEmojis[getLanguageEmojiWord(this.language, guessWord)]);
+        },
+        get onLastGuess() {
+          return this.currentGuessIndex === maxGuesses - 1;
+        },
+        isCurrentWordComplete() {
+          return (
+            this.currentWord && this.currentWord.length === this.target.length && this.currentWord.indexOf(" ") < 0
+          );
+        },
+        isCurrentWordInvalid() {
+          return (this.settings.spellChecker === "on" || this.onLastGuess) && !this.isValidGuess(this.currentWord);
+        },
+        isValidGuess(word) {
+          const activeDictionary = this.language === "af" ? languageDictionaries.af : languageDictionaries.en;
+          const normalizedWord = (word || "").toUpperCase();
+          return !!activeDictionary && activeDictionary.has(normalizedWord);
+        },
+        isCursor(guessIndex, letterIndex) {
+          return guessIndex === this.currentGuessIndex && letterIndex === this.cursor;
+        },
+        cursorAdjust(delta) {
+          if (this.cursorReverse) {
+            return this.cursor - delta;
+          }
+          return this.cursor + delta;
+        },
+        get victoryEmoji() {
+          const victoryEmojis = this.isAprilFools()
+            ? ["👽", "🦸‍♀️", "😻", "🥸", "🍪", "🥵"]
+            : ["🏆", "🤩", "🥳", "😁", "🙂", "👍"];
+          return victoryEmojis[this.currentGuessIndex - 1] || victoryEmojis[victoryEmojis.length - 1];
+        },
+        /** First letter provided free for 4-letter words */
+        prepareFreebie() {
+          const freebieIndex = this.cursorReverse ? this.target.length - 1 : 0;
+          if (this.target.length <= 4 && this.guesses[0][freebieIndex].letter === "") {
+            this.addLetter({
+              type: "letter",
+              label: this.target[freebieIndex],
+            });
+            this.guesses[0][freebieIndex].state = "match"; // set this already as signal to player
+          }
+        },
+        get hintsAvailable() {
+          return this.supportsHints && this.settings.hints === "on" && this.grade !== "grade4";
+        },
+        prepareHint() {
+          if (!this.supportsHints || this.grade === "grade4" || this.currentGuessIndex < 2 || this.solved || this.failed) {
+            this.resetHint();
+            return;
+          }
+
+          try {
+            const hint = getHint(
+              this.target,
+              combineKnowledge(keysToKnowledge(this.keys), this.hintKnowledge),
+              this.settings,
+              this.currentGuessIndex,
+              this.lastWord
+            );
+            if (hint) {
+              this.hint = hint;
+              this.hint.timer = setTimeout(() => {
+                this.hint.available = true;
+              }, HINT_DELAY);
+            } else {
+              this.resetHint();
+            }
+          } catch (e) {
+            console.error("Unable to prepare a hint.", e);
+          }
+        },
+        resetHint() {
+          clearTimeout(this.hint.timer);
+          this.hint = { ...DEFAULT_HINT };
+        },
+        showEmojiHint() {
+          if (!this.supportsEmojiCollection) {
+            return;
+          }
+          if (this.lockedEmojis.length === 0) {
+            return;
+          }
+
+          const collection = this.getFromLocalStorage(this.getCollectionKey(), {
+            unlocked: {},
+            hint: {},
+          });
+
+          const hintDuration = 60 * 60 * 1000; // 1 hour between collection hints
+          if (!collection.hint || !collection.hint.date || new Date() - new Date(collection.hint.date) > hintDuration) {
+            const randomEmojiIndex = Math.floor(Math.random() * this.lockedEmojis.length);
+            const randomLockedEmoji = this.lockedEmojis[randomEmojiIndex];
+            collection.hint = {
+              ...randomLockedEmoji,
+              date: new Date().toISOString(),
+            };
+            localStorage.setItem(this.getCollectionKey(), JSON.stringify(collection));
+
+            amplitude.getInstance().logEvent("show_emoji_hint", {
+              emoji: collection.hint.emoji,
+              word: collection.hint.word,
+              emojiCount: this.unlockedEmojis.length,
+            });
+          }
+
+          let blanks = Array(collection.hint.word.length).fill("_ ").join("");
+          const foundEmoji = this.unlockedEmojis.some((entry) => entry.word === collection.hint.word);
+          if (foundEmoji) {
+            // If the emoji is since found, show the word in the hint
+            blanks = collection.hint.word;
+          }
+          this.showNotice(`${blanks} = #${collection.hint.emoji}#`, "hint");
+        },
+        showHint() {
+          if (!this.hint.shown) {
+            amplitude.getInstance().logEvent("show_hint", {
+              level_name: this.level,
+              difficulty: this.grade,
+              language: this.language,
+              archiveGame: this.isArchiveGame(),
+              repeatedGame: this.repeatedGame,
+              guess: this.currentGuessIndex + 1,
+              message: this.hint.message,
+              letter: this.hint.letter,
+            });
+            this.hint.shown = true;
+          }
+          this.showNotice(this.hint.message, "hint");
+          const newKnowledge = {
+            presents: this.hint.letter ? [this.hint.letter] : [],
+            misses: this.hint.misses || [],
+          };
+          this.hintKnowledge = combineKnowledge(this.hintKnowledge, newKnowledge);
+          this.updateKeyboardForHints(this.hintKnowledge);
+        },
+        showNotice(text, type) {
+          window.dispatchEvent(
+            new CustomEvent("notice", {
+              detail: { text, type },
+            })
+          );
+        },
+        initialLoad() {
+          this.loadSettings();
+          this.loadGameState();
+          this.loadCollection();
+          this.loadArchive();
+          this.updateTitle();
+        },
+        updateRoute() {
+          const nextHash = this.gameUrl;
+          if (window.location.hash !== nextHash) {
+            window.location.hash = nextHash;
+            return;
+          }
+          this.page = nextHash;
+          this.updateTitle();
+        },
+        formatGameStateVariable(language, grade, puzzleId) {
+          return `spellie_${language}_${grade}_state_${puzzleId}`;
+        },
+        get gameStateVariable() {
+          return this.formatGameStateVariable(this.language, this.grade, this.puzzleId);
+        },
+        getStatisticsKey(language = this.language) {
+          return `spellie_${language}_statistics`;
+        },
+        getCollectionKey(language = this.language) {
+          return `spellie_${language}_collection`;
+        },
+        getGameStateFromLocalStorage(language, grade, puzzleId) {
+          const state = this.getFromLocalStorage(this.formatGameStateVariable(language, grade, puzzleId), undefined);
+          if (state) {
+            return state;
+          }
+
+          if (language === "en") {
+            const difficulty = GRADE_TO_DIFFICULTY[grade];
+            const legacyState = this.getFromLocalStorage(`game-state-${difficulty}-${puzzleId}`, undefined);
+            if (legacyState) {
+              return legacyState;
+            }
+            const oldState = this.getFromLocalStorage(`game-state-${difficulty}`, {});
+            if (oldState.puzzleId === puzzleId) {
+              return oldState;
+            }
+          }
+          return {};
+        },
+        getTrackWords(language, grade, listName = "words") {
+          const languageSet = languageWords[language] || languageWords.en;
+          const list = languageSet[listName] || {};
+          return list[grade] || [];
+        },
+        getPuzzleForSelection(language, grade, puzzleId) {
+          const historicalWordList = this.getTrackWords(language, grade, "historical");
+          const futureWordList = this.getTrackWords(language, grade, "future");
+          const difficulty = GRADE_TO_DIFFICULTY[grade];
+          const date = getDateForPuzzleId(puzzleId);
+
+          if (puzzleId >= 0 && puzzleId < historicalWordList.length) {
+            return historicalWordList[puzzleId];
+          }
+
+          const holidayPuzzle = language === "en" ? getHolidayPuzzle(date, difficulty) : undefined;
+          if (holidayPuzzle) {
+            return holidayPuzzle;
+          }
+
+          if (futureWordList.length === 0) {
+            return this.getTrackWords("en", grade, "future")[0];
+          }
+
+          const futureIndex = Math.abs((puzzleId - historicalWordList.length) % futureWordList.length);
+          return futureWordList[futureIndex];
+        },
+        loadGameState() {
+          if (!this.isArchiveGame() && todaysPuzzleId !== getTodayPuzzleId()) {
+            todaysPuzzleId = getTodayPuzzleId();
+            this.puzzleId = todaysPuzzleId;
+          }
+
+          try {
+            const initialState = this.getGameStateFromLocalStorage(this.language, this.grade, this.puzzleId);
+            this.gameId += 1;
+            this.level = initialState.level || `${this.language}-${this.grade}-${this.puzzleId}`;
+            this.target = initialState.target || this.getPuzzleForSelection(this.language, this.grade, this.puzzleId);
+
+            this.guesses = initialState.guesses || emptyGuesses(this.target.length, maxGuesses);
+            this.solved = initialState.solved || false;
+            this.failed = initialState.failed || false;
+            this.repeatedGame = initialState.repeatedGame || false;
+            this.masked = this.solved || this.failed;
+            this.endGame = this.solved || this.failed;
+            this.currentGuessIndex = initialState.currentGuessIndex || 0;
+            this.cursorReverse = this.isAprilFools();
+            this.cursor = initialState.cursor || (this.cursorReverse ? this.target.length - 1 : 0);
+            this.cursorMode = initialState.cursorMode || false;
+            this.newEmojis = initialState.newEmojis || [];
+            this.hintKnowledge = initialState.hintKnowledge || {};
+            this.hintKnowledge.matches = this.hintKnowledge.matches || [];
+            this.hintKnowledge.presents = this.hintKnowledge.presents || [];
+            this.hintKnowledge.misses = this.hintKnowledge.misses || [];
+            this.hintKnowledge.availables = this.hintKnowledge.availables || [];
+            this.updateKeyboard();
+            this.resetHint();
+            clearTimeout(this.endGameTimer);
+            this.prepareHint();
+            this.prepareFreebie();
+          } catch (err) {
+            console.error(err);
+          }
+        },
+        saveGameState() {
+          localStorage.setItem(this.gameStateVariable, JSON.stringify(this.toJson()));
+        },
+        loadSettings() {
+          const persistedSettings = this.getFromLocalStorage("settings", {});
+          const route = parseHash(window.location.hash, persistedSettings.language, persistedSettings.grade);
+          const dayOverwrites = this.isAprilFools() ? { sharingEmojis: "poop" } : {};
+          this.settings = {
+            ...DEFAULT_SETTINGS,
+            ...persistedSettings,
+            ...dayOverwrites,
+            language: route.language,
+            grade: route.grade,
+          };
+          if (this.settings.sharingEmojis === "") {
+            this.settings.sharingEmojis = DEFAULT_SETTINGS.sharingEmojis;
+          }
+          if (this.settings.language === "af") {
+            this.settings.hints = "off";
+          }
+          this.language = this.settings.language;
+          this.grade = this.settings.grade;
+          this.puzzleId = route.puzzleId;
+          this.page = route.page;
+        },
+        saveSettings() {
+          localStorage.setItem("settings", JSON.stringify(this.settings));
+          this.loadGameState();
+          this.loadCollection();
+          this.loadArchive();
+        },
+        updateSettings() {
+          this.language = this.settings.language;
+          this.grade = this.settings.grade;
+          if (this.language === "af") {
+            this.settings.hints = "off";
+          }
+          this.saveSettings();
+          this.updateRoute();
+          this.showNotice(this.t("settingsUpdated"));
+        },
+        isArchiveGame() {
+          return this.puzzleId !== todaysPuzzleId;
+        },
+        get gameUrl() {
+          let hash = `#game-${this.language}-${this.grade}`;
+          if (this.isArchiveGame()) {
+            hash += `-${this.puzzleId}`;
+          }
+          return hash;
+        },
+        isGamePage() {
+          if (this.page === "") {
+            return true;
+          }
+          return /^#game-(en|af)-(grade2|grade3|grade4)(?:-\d+)?$/.test(this.page) || /^#(easy|medium|hard)(?:-\d+)?$/.test(this.page);
+        },
+        updateLanguage(language) {
+          this.language = language;
+          this.settings.language = language;
+          if (language === "af") {
+            this.settings.hints = "off";
+          }
+          this.saveSettings();
+          this.updateRoute();
+        },
+        updateGrade(grade, puzzleId) {
+          this.grade = grade;
+          this.settings.grade = grade;
+          if (puzzleId !== undefined) {
+            this.puzzleId = puzzleId;
+          }
+          this.saveSettings();
+          this.updateRoute();
+        },
+        loadArchive() {
+          const statistics = this.getFromLocalStorage(this.getStatisticsKey(), DEFAULT_STATISTICS);
+          this.archivePuzzles = [];
+          for (let i = 0; i <= todaysPuzzleId; i++) {
+            this.archivePuzzles[i] = {
+              puzzleId: i,
+            };
+            GRADES.forEach((grade) => {
+              const archivePuzzleGameState = this.getGameStateFromLocalStorage(this.language, grade, i);
+              let state = "unsolved";
+              if (archivePuzzleGameState.solved) {
+                state = "solved";
+              } else if (archivePuzzleGameState.guesses && archivePuzzleGameState.guesses.length > 0) {
+                state = "in-progress";
+              }
+              this.archivePuzzles[i][grade] = state;
+            }, this);
+          }
+          this.archivePuzzles.reverse();
+          this.visibleArchiveCount = 365;
+        },
+        handleArchiveScroll() {
+          if (this.page !== "#archive") return;
+
+          const threshold = 100; // pixels from bottom to trigger load
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollBottom = documentHeight - scrollTop - windowHeight;
+
+          if (scrollBottom < threshold) {
+            this.loadMoreArchive();
+          }
+        },
+        loadCollection() {
+          if (!this.supportsEmojiCollection) {
+            this.emojiCollection = [];
+            return;
+          }
+          const collection = this.getFromLocalStorage(this.getCollectionKey(), {
+            unlocked: {},
+          });
+          const activeEmojis = getEmojiMap(this.language);
+          this.emojiCollection = Object.entries(activeEmojis)
+            .sort(
+              (a, b) => a[0] - b[0] // Sort alphabetical
+            )
+            .map(([word, emoji]) => ({
+              word,
+              emoji,
+              unlocked: Object.keys(collection.unlocked).indexOf(word) >= 0,
+            }));
+          const identifyEmojis = new amplitude.Identify().set("emojiCount", this.unlockedEmojis.length);
+          amplitude.getInstance().identify(identifyEmojis);
+        },
+        levelEnd() {
+          amplitude.getInstance().logEvent("level_end", {
+            level_name: this.level,
+            difficulty: this.grade,
+            language: this.language,
+            guesses: this.solved ? this.currentGuessIndex : null,
+            success: this.solved,
+            archiveGame: this.isArchiveGame(),
+            repeatedGame: this.repeatedGame,
+            guessWords: this.guessWords,
+            newEmojis: this.newEmojis,
+            newEmojiCount: this.newEmojis.length,
+            emojiCount: this.unlockedEmojis.length,
+            ...this.guessWordDictionary,
+          });
+          this.endGameTimer = setTimeout(() => {
+            this.endGame = true;
+            if (!this.solved) {
+              this.masked = true;
+            } else {
+              // Wait until after the victoryEmoji animation to mask
+              this.endGameTimer = setTimeout(() => {
+                this.masked = true;
+              }, 6000);
+            }
+          }, this.target.length * 250 + 1000); // 1 second after last letter shows up
+          const statistics = this.getFromLocalStorage(this.getStatisticsKey(), DEFAULT_STATISTICS);
+
+          if (this.solved) {
+            statistics[this.grade].success += 1;
+            statistics[this.grade].guesses[this.currentGuessIndex] += 1;
+          } else {
+            statistics[this.grade].fail += 1;
+          }
+          localStorage.setItem(this.getStatisticsKey(), JSON.stringify(statistics));
+        },
+        get lockedEmojis() {
+          return this.emojiCollection.filter((e) => !e.unlocked);
+        },
+        get unlockedEmojis() {
+          return this.emojiCollection.filter((e) => e.unlocked);
+        },
+        get sessionNewEmojis() {
+          return this.unlockedEmojis.filter((e) => e.new);
+        },
+        resetLevel() {
+          localStorage.setItem(this.gameStateVariable, JSON.stringify({ repeatedGame: true, puzzleId: this.puzzleId }));
+          amplitude.getInstance().logEvent("level_reset", {
+            level_name: this.level,
+            difficulty: this.grade,
+            language: this.language,
+            guesses: this.solved ? this.currentGuessIndex : null,
+            success: this.solved,
+            archiveGame: this.isArchiveGame(),
+          });
+          this.loadGameState();
+        },
+        mask() {
+          this.masked = true;
+        },
+        unmask() {
+          this.masked = false;
+        },
+        toJson() {
+          return {
+            target: this.target,
+            level: this.level,
+            puzzleId: this.puzzleId,
+            guesses: this.guesses,
+            solved: this.solved,
+            failed: this.failed,
+            repeatedGame: this.repeatedGame,
+            currentGuessIndex: this.currentGuessIndex,
+            cursor: this.cursor,
+            cursorMode: this.cursorMode,
+            newEmojis: this.newEmojis,
+            hintKnowledge: this.hintKnowledge,
+          };
+        },
+        get canShare() {
+          return !!navigator && (!!navigator.share || !!navigator.clipboard);
+        },
+        share() {
+          const title = "Speller";
+          let text;
+          let shareType;
+          if ((this.solved || this.failed) && this.isGamePage()) {
+            text = `Speller #${this.puzzleId} (${this.gradeLabel}, ${this.language.toUpperCase()})\n${guessesAsEmojis(
+              this.guesses,
+              this.settings.sharingEmojis
+            )}`;
+            shareType = "puzzle";
+          } else if (this.page === "#collection" && this.unlockedEmojis.length === 1 && this.supportsEmojiCollection) {
+            text = `${this.t("shareFirstEmoji")} ${this.unlockedEmojis[0].emoji}`;
+            shareType = "emojis";
+          } else if (this.page === "#collection" && this.unlockedEmojis.length > 1 && this.supportsEmojiCollection) {
+            text = `${this.t("shareManyEmojiPrefix")} ${this.unlockedEmojis.length} ${this.t("shareManyEmojiSuffix")}\n${this.unlockedEmojis
+              .map((e) => e.emoji)
+              .join("")}`;
+            shareType = "emojis";
+          } else {
+            const wordsMatch = [[{ state: "miss" }, { state: "present" }, { state: "match" }, { state: "miss" }]];
+            const wordsEmojis = guessesAsEmojis(wordsMatch, this.settings.sharingEmojis);
+            text = `Speller\nⓦⓞⓡⓓ\n${wordsEmojis}\n🤔🤔🤔🤔\nⓗⓔⓡⓞ🦸`;
+            shareType = "basic";
+          }
+
+          const shareData = {
+            title,
+            text,
+          };
+          if (!!navigator.canShare && navigator.canShare(shareData) && onMobile()) {
+            navigator.share(shareData);
+          } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareData.text);
+            this.showNotice(this.t("shareCopied"));
+          }
+          amplitude.getInstance().logEvent("clicked_share", {
+            page: this.page,
+            text,
+            share_type: shareType,
+            archiveGame: this.isArchiveGame(),
+          });
+        },
+        getFromLocalStorage(key, defaultValue) {
+          const value = localStorage.getItem(key);
+          if (value) {
+            return JSON.parse(value);
+          }
+          return defaultValue;
+        },
+        get visibleArchivePuzzles() {
+          return this.archivePuzzles.slice(0, this.visibleArchiveCount);
+        },
+        loadMoreArchive() {
+          if (this.visibleArchiveCount < this.archivePuzzles.length) {
+            this.visibleArchiveCount = Math.min(this.visibleArchiveCount + 365, this.archivePuzzles.length);
+          }
+        },
+        formatArchiveDate(puzzleId) {
+          if (puzzleId === todaysPuzzleId) {
+            return this.t("today");
+          }
+          return getDateForPuzzleId(puzzleId).toLocaleDateString(this.language === "af" ? "af-ZA" : "en-ZA", {
+            dateStyle: "medium",
+          });
+        },
+        get archiveDate() {
+          if (this.isArchiveGame()) {
+            return (
+              " " +
+              getDateForPuzzleId(this.puzzleId).toLocaleDateString(this.language === "af" ? "af-ZA" : "en-ZA", {
+                month: "short",
+                day: "numeric",
+              })
+            );
+          }
+          return "";
+        },
+        isAprilFools() {
+          const puzzleDate = getDateForPuzzleId(this.puzzleId);
+          return puzzleDate.getMonth() === 4 - 1 && puzzleDate.getDate() === 1;
+        },
+      };
+    }
+
+    function emojiReplace(text, className = "") {
+      const stripped = text.replace(/(<([^>]+)>)/gi, "");
+      // extract emoji between # characters
+      // (actually detecting with regex has too many edge cases)
+      const emojiMatch = stripped.match(/#(?<emoji>\S+)#/i);
+      if (!emojiMatch) {
+        return stripped;
+      }
+      const imageClass = ["emoji-image", className].filter(Boolean).join(" ");
+      const emojiImage = `<img src="${getEmojiImage(emojiMatch.groups.emoji)}" class="${imageClass}" width="20" alt="${
+        emojiMatch.groups.emoji
+      }" />`;
+      return stripped.replace(/#/g, "").replace(emojiMatch.groups.emoji, emojiImage);
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    function noticesHandler() {
+      return {
+        notice: null,
+        type: null,
+        notify(notice) {
+          const visibleNotice = {
+            ...notice,
+            id: Date.now(),
+            visible: true,
+          };
+          this.notice = visibleNotice;
+          const timeShown = (notice.type === "hint" ? 10 : 5) * 1000;
+          setTimeout(() => {
+            this.remove(visibleNotice.id);
+          }, timeShown);
+        },
+        remove(id) {
+          if (this.notice && this.notice.id === id) {
+            this.notice.visible = false;
+          }
+        },
+        message() {
+          if (!this.notice) return;
+          const currentLanguage = document.documentElement.lang === "af" ? "af" : "en";
+          const hintLabel = (translations[currentLanguage] || translations.en).hintPrefix || "Hint";
+
+          if (this.notice.type === "hint") {
+            return `<strong>${hintLabel} 🤔</strong><br>${emojiReplace(this.notice.text)}`;
+          }
+
+          if (this.notice.type === "reward") {
+            return emojiReplace(this.notice.text, "reward-pop-bounce");
+          }
+
+          return emojiReplace(this.notice.text);
+        },
+      };
+    }
+
+    function initScalingFontSize() {
+      if ("ResizeObserver" in window === false) {
+        // Old browser without a ResizeObserver, leave font size as defaults
+        return;
+      }
+
+      const MAX_FONT_SIZE = 48;
+      const grid = document.querySelector(".guesses-grid");
+
+      /** Set grid font, which in turn impacts all guess tiles */
+      function setGridFontSize(container) {
+        if (!container.offsetWidth) return;
+
+        let tileWidth;
+        const sampleTile = container.querySelector(".guesses-tile");
+        if (sampleTile && sampleTile.offsetWidth) {
+          // found a tile, so base it on the tile dimensions
+          tileWidth = sampleTile.offsetWidth;
+        } else if (container.offsetHeight < container.offsetWidth) {
+          // no tile (probably not yet rendered), so estimate it based on container
+          tileWidth = container.offsetHeight / 6;
+        } else {
+          tileWidth = container.offsetWidth / 6;
+        }
+
+        const fontSize = 0.7 * tileWidth;
+        grid.style.fontSize = `${Math.min(MAX_FONT_SIZE, fontSize)}px`;
+      }
+
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.target) {
+            setGridFontSize(entry.target);
+          }
+        }
+      });
+
+      resizeObserver.observe(grid);
+    }
+
+    window.onerror = function onError(message, url, lineNo, columnNo, error) {
+      try {
+        if (!url || url.includes("extension://")) {
+          // Ignore problems with extensions
+          return false;
+        }
+        amplitude.getInstance().logEvent("error_encountered", {
+          message,
+          url: window.location.href,
+          source: `${url}:${lineNo}:${columnNo}`,
+          error: JSON.stringify(error),
+        });
+      } catch (err) {
+        // If we're having problems talking to amplitude
+        // Don't throw another error in here
+        console.error("Error encountered.", err);
+      }
+
+      return false;
+    };
+  </script>
+</html>
