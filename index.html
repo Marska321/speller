@@ -88,6 +88,8 @@
         </div>
         <p x-text="t('aboutIntro')"></p>
         <p x-text="t('aboutGrades')"></p>
+        <p x-text="t('aboutAdaptation')"></p>
+        <p x-text="t('aboutOrigins')"></p>
 
         <h2 x-text="t('aboutPlay')"></h2>
         <p x-text="t('aboutPlayBody')"></p>
@@ -127,30 +129,27 @@
         </ul>
 
         <h2 x-text="t('aboutCreators')"></h2>
-        <ul>
-          <li>Christopher Porter</li>
-          <li>David Hirtle</li>
-          <li>James Dodds</li>
-          <li>
-            Many other
-            <a href="https://github.com/canadianveggie/spellie" target="_blank">contributors</a>
-          </li>
-        </ul>
+        <div class="about-lead-credit">
+          <p><strong>Mario Botha</strong></p>
+          <p x-text="t('aboutAdaptation')"></p>
+        </div>
+        <div class="about-origin-credit">
+          <p x-text="t('aboutOrigins')"></p>
+          <p>
+            Original creators: Christopher Porter, David Hirtle, James Dodds, and many other
+            <a href="https://github.com/canadianveggie/spellie" target="_blank">contributors</a>.
+          </p>
+        </div>
         <div class="social-links">
-          <a href="https://bsky.app/profile/spelliegame.com" target="_blank"
-            ><img src="public/bluesky.png" alt="Bluesky" title="Follow on Bluesky"
-          /></a>
-          <a href="https://mastodon.social/@spellie" target="_blank"
-            ><img src="public/mastodon.png" alt="Mastodon" title="Follow on Mastodon"
-          /></a>
           <a href="https://github.com/canadianveggie/spellie" target="_blank"
-            ><img src="public/github.png" alt="GitHub" title="Follow on GitHub"
+            ><img src="public/github.png" alt="Original Spellie GitHub" title="View the original Spellie project"
           /></a>
-          <img src="public/madeInCanada.png" alt="Proudly Made in Canada" title="Proudly Made in Canada" />
+          <span class="made-local-badge" title="Made in Cape Town">Made in Cape Town</span>
         </div>
         <p class="legal">
-          © 2022 Christopher Porter and David Hirtle. Licensed under the PolyForm Noncommercial License 1.0.0. “Spellie”
-          and associated logos are trademarks of the authors.
+          Speller is a non-commercial South African adaptation by Mario Botha. Original Spellie code © 2022 Christopher
+          Porter and David Hirtle, licensed under the PolyForm Noncommercial License 1.0.0. “Spellie” and associated
+          logos are trademarks of the original authors.
         </p>
       </div>
       <div class="game-content" x-show="isGamePage()">

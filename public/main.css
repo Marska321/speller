@@ -705,6 +705,8 @@ main {
   margin-top: 2rem;
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
@@ -712,10 +714,45 @@ main {
   height: 36px;
 }
 
+.about-lead-credit {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 2px solid rgba(31, 36, 48, 0.12);
+}
+
+.about-lead-credit p,
+.about-origin-credit p {
+  margin: 0.35rem 0;
+}
+
+.about-origin-credit {
+  margin-top: 0.9rem;
+  font-size: 0.88rem;
+  opacity: 0.82;
+  line-height: 1.5;
+}
+
+.made-local-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5a9cb5 0%, #face68 100%);
+  color: #1f2430;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 18px rgba(31, 36, 48, 0.12);
+}
+
 .legal {
   margin-top: 1rem;
-  font-size: 0.9rem;
-  opacity: 0.85;
+  font-size: 0.78rem;
+  opacity: 0.72;
+  line-height: 1.5;
   text-align: center;
 }
 
