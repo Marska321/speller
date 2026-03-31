@@ -2,6 +2,8 @@ declare global {
   interface Window {
     wordHints: WordHints;
     emojisAf: Record<string, string>;
+    va?: (...args: unknown[]) => void;
+    vaq?: IArguments[];
   }
 }
 

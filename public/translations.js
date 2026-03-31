@@ -24,6 +24,10 @@ const translations = {
       "This version was adapted and localized by Mario Botha for South African classrooms, with South African English and Afrikaans support.",
     aboutOrigins:
       "It is based on the original Spellie project, which was written in Canadian English by Christopher Porter, David Hirtle, James Dodds, and many other contributors.",
+    aboutPrivacy:
+      "Speller saves your progress and emoji collection privately in this browser on this device. No login is needed.",
+    aboutPrivacy2:
+      "If you clear browser data, use private browsing, switch browsers, or move to another device, your collection may reset.",
     aboutPlay: "How to play",
     aboutPlayBody: "You have six (6) tries to guess the daily word, using the feedback to narrow down the options.",
     aboutCreators: "Credits",
@@ -66,6 +70,10 @@ const translations = {
     collectionTotalPrefix: "Psst. There are over",
     collectionTotalSuffix: "emojis in total...",
     collectionHint: "Need a hint? 🤔",
+    collectionPrivacy:
+      "Your emoji collection is saved privately in this browser on this device. No login is required.",
+    collectionPrivacy2:
+      "If you clear browser data or use a different browser or device, your collection may reset.",
     today: "Today",
     notFound: "It was:",
     guess: "guess",
@@ -99,6 +107,10 @@ const translations = {
       "Hierdie weergawe is deur Mario Botha aangepas en gelokaliseer vir Suid-Afrikaanse klaskamers, met Suid-Afrikaanse Engels en Afrikaans.",
     aboutOrigins:
       "Dit is gebaseer op die oorspronklike Spellie-projek, wat in Kanadese Engels geskryf is deur Christopher Porter, David Hirtle, James Dodds en baie ander bydraers.",
+    aboutPrivacy:
+      "Speller stoor jou vordering en emoji-versameling privaat in hierdie blaaier op hierdie toestel. Geen aanmelding is nodig nie.",
+    aboutPrivacy2:
+      "As jy blaaierdata uitvee, privaat blaai gebruik, van blaaier verander, of na 'n ander toestel skuif, kan jou versameling terugstel.",
     aboutPlay: "Hoe om te speel",
     aboutPlayBody: "Jy kry ses (6) kanse om die daaglikse woord te raai en gebruik die terugvoer om nader te kom.",
     aboutCreators: "Erkennings",
@@ -141,6 +153,10 @@ const translations = {
     collectionTotalPrefix: "Psst. Daar is meer as",
     collectionTotalSuffix: "emoji's in totaal...",
     collectionHint: "Kort 'n wenk? 🤔",
+    collectionPrivacy:
+      "Jou emoji-versameling word privaat in hierdie blaaier op hierdie toestel gestoor. Geen aanmelding is nodig nie.",
+    collectionPrivacy2:
+      "As jy blaaierdata uitvee of 'n ander blaaier of toestel gebruik, kan jou versameling terugstel.",
     today: "Vandag",
     notFound: "Dit was:",
     guess: "raai",

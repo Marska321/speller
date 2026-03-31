@@ -97,6 +97,10 @@
         <p x-text="t('aboutGrades')"></p>
         <p x-text="t('aboutAdaptation')"></p>
         <p x-text="t('aboutOrigins')"></p>
+        <div class="privacy-note">
+          <p x-text="t('aboutPrivacy')"></p>
+          <p x-text="t('aboutPrivacy2')"></p>
+        </div>
 
         <h2 x-text="t('aboutPlay')"></h2>
         <p x-text="t('aboutPlayBody')"></p>
@@ -305,6 +309,10 @@
           <span x-text="Math.floor(Object.keys(emojis).length / 100)  * 100"></span>
           <span x-text="t('collectionTotalSuffix')"></span>
         </p>
+        <div class="privacy-note">
+          <p x-text="t('collectionPrivacy')"></p>
+          <p x-text="t('collectionPrivacy2')"></p>
+        </div>
         <div class="hint-area" x-show="unlockedEmojis.length >= 100 && lockedEmojis.length > 0" x-cloak>
           <button class="hint-button" @click="showEmojiHint" x-text="t('collectionHint')"></button>
         </div>
