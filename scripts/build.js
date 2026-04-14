@@ -163,6 +163,23 @@ async function buildPublicAssets() {
   );
 }
 
+async function buildAnalytics() {
+  const srcAnalyticsPath = path.join(ROOT, "src", "analytics.js");
+  const outAnalyticsPath = path.join(OUT_DIR, "public", "analytics.js");
+
+  // Bundle analytics.js with @vercel/analytics package
+  await esbuild.build({
+    entryPoints: [srcAnalyticsPath],
+    bundle: true,
+    minify: true,
+    sourcemap: false,
+    outfile: outAnalyticsPath,
+    format: "iife",
+    target: "es2018",
+    legalComments: "none",
+  });
+}
+
 async function copyRootWebAssets() {
   const rootFilesToCopy = [
     "CNAME",
@@ -185,6 +202,7 @@ async function main() {
   console.log("Building into docs/ ...");
   await ensureEmptyDir(OUT_DIR);
   await copyRootWebAssets();
+  await buildAnalytics();
   await buildPublicAssets();
   await buildIndexHtml();
   console.log("Build complete.");
